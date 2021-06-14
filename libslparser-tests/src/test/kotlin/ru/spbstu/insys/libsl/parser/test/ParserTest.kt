@@ -3,9 +3,7 @@ package ru.spbstu.insys.libsl.parser.test
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
-import ru.spbstu.insys.libsl.parser.AutomatonVariableStatement
-import ru.spbstu.insys.libsl.parser.ModelParser
-import ru.spbstu.insys.libsl.parser.print
+import ru.spbstu.insys.libsl.parser.*
 import java.io.StringReader
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -96,5 +94,19 @@ class ParserTest {
         assertEquals(1, finishStates.size)
 
         assertEquals("F", finishStates.first().name)
+    }
+
+    @Test
+    fun parseWithRequires() {
+        val sourceModel = assertNotNull(readResourceAsString("models/LibraryWithRequires.lsl"))
+        val parsedModel = ModelParser().parse(sourceModel)
+
+        val func = parsedModel.functions.first()
+        assertTrue(func.requires is OrOrTerm)
+        val req1 = func.requires as OrOrTerm
+        assertTrue(req1.left is OrOrTerm)
+        assertTrue(req1.right is InversionTerm)
+        assertTrue((req1.right as InversionTerm).term is ArithmeticTerm)
+        assertEquals(ArithmeticTermType.NOT_EQ, ((req1.right as InversionTerm).term as ArithmeticTerm).type)
     }
 }

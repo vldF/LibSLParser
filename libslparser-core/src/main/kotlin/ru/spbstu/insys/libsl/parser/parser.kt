@@ -86,6 +86,7 @@ private class LibSLReader : LibSLBaseVisitor<Node>() {
         )
 
     override fun visitFunDecl(ctx: LibSLParser.FunDeclContext): FunctionDecl {
+        val requires = visitFunRequires(ctx.funRequires())
         val args = ctx.funArgs()?.funArg()?.map { visitFunArg(it) } ?: listOf()
 
         val statements = ctx.funProperties().map { visit(it) }
@@ -101,8 +102,60 @@ private class LibSLReader : LibSLBaseVisitor<Node>() {
             returnValue = visitFunReturnType(ctx.funReturnType()),
             staticName = staticName,
             properties = properties,
-            variableAssignments = variableAssignments
+            variableAssignments = variableAssignments,
+            requires = requires
         )
+    }
+
+    override fun visitFunRequires(ctx: LibSLParser.FunRequiresContext?): Term? {
+        ctx?.requiresTermsList() ?: return null
+        return visitRequiresTermsList(ctx.requiresTermsList())
+    }
+
+    override fun visitRequiresTermsList(ctx: LibSLParser.RequiresTermsListContext): Term {
+        if (ctx.requiresTerm() != null) {
+            val term = ctx.requiresTerm()
+            return visitRequiresTerm(term)
+        }
+
+        val left = visitRequiresTermsList(ctx.requiresTermsList(0))
+        val right = visitRequiresTermsList(ctx.requiresTermsList(1))
+
+        return when {
+            ctx.ANDAND() != null -> {
+                AndAndTerm(left, right)
+            }
+            ctx.OROR() != null -> {
+                OrOrTerm(left, right)
+            }
+            else -> {
+                throw ParseException("Unknown operator type")
+            }
+        }
+
+    }
+
+    override fun visitRequiresTerm(ctx: LibSLParser.RequiresTermContext): Term {
+        val left = ctx.termPart(0).parseTerm()
+        val right = ctx.termPart(1).parseTerm()
+        val opType =  arithmeticTypeFromString(ctx.booleanOp().text)
+
+        val arithmeticTerm = ArithmeticTerm(left, right,opType)
+
+        return if (ctx.inversion() != null) {
+            InversionTerm(arithmeticTerm)
+        } else {
+            arithmeticTerm
+        }
+    }
+
+    private fun LibSLParser.TermPartContext.parseTerm() : Term {
+        return if (number() != null) {
+            val num = text.toIntOrNull() ?: text.toDouble()
+            Const(num)
+        } else {
+            VariableTerm(text)
+        }
     }
 
     override fun visitActionDecl(ctx: LibSLParser.ActionDeclContext): Node {

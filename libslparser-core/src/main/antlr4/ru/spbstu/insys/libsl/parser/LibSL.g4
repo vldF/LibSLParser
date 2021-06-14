@@ -157,7 +157,55 @@ extendableFlag
    ;
 
 funDecl
-   :   'fun' (entityName '.')? funName '(' funArgs? ')' (':' funReturnType)? (';' | '{' funProperties* '}')
+   :   'fun' (entityName '.')? funName '(' funArgs? ')' (':' funReturnType)? (';' | '{' funRequires? funProperties* '}')
+   ;
+
+funRequires
+   :   'requires' requiresTermsList ';'
+   ;
+
+requiresTermsList
+   :   requiresTermsList ANDAND requiresTermsList
+   |   requiresTermsList OROR requiresTermsList
+   |   requiresTerm
+   ;
+
+ANDAND : '&&' ;
+
+OROR : '||' ;
+
+requiresTerm
+   :   inversion? '(' termPart booleanOp termPart ')'
+   ;
+
+inversion
+   :   '!'
+   ;
+
+termPart
+   : Identifier
+   | number
+   ;
+
+requiresOp
+   :   ('&&' | '||')
+   ;
+
+requiresInversion
+   :   '!'
+   ;
+
+number
+   :   IntegerNumber
+   |   FloatConst
+   ;
+
+FloatConst
+   :   IntegerNumber '.' IntegerNumber
+   ;
+
+booleanOp
+   : ('==' | '!=' | '>' | '<' | '>=' | '<=')
    ;
 
 funProperties
@@ -268,9 +316,9 @@ Identifier
 //    : ('>'|'<'|'<='|'>=')
 //    ;
 //
-//DecNumbers
-//    :   ('0'..'9')+
-//    ;
+IntegerNumber
+    :   ('0'..'9')+
+    ;
 
 fragment
 JavaLetter

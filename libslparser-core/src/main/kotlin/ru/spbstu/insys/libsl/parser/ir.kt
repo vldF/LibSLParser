@@ -90,7 +90,8 @@ fun LibraryDecl.generateHandlersForArrayAndPointerTypes(): LibraryDecl {
             name = "", args = listOf(),
             actions = listOf(), returnValue = null,
             staticName = null, properties = listOf(), builtin = true,
-            variableAssignments = listOf()
+            variableAssignments = listOf(),
+            requires = null
         )
         val set = baseFunctionDecl.copy(name = "set<$codeType>")
         val get = baseFunctionDecl.copy(name = "get<$codeType>")
