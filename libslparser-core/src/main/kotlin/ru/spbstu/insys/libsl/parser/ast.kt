@@ -107,8 +107,9 @@ data class VariableTerm (
     val name: String
 ) : Term
 
-data class Const (
-    val value: Number
+data class Literal (
+    val text: String,
+    val numericValue: Number?
 ) : Term
 
 data class AndAndTerm (
@@ -146,3 +147,13 @@ fun arithmeticTypeFromString(str: String): ArithmeticTermType {
         else -> throw ParseException("Unknown operator type")
     }
 }
+
+private val ArithmeticTermType.text: String
+    get() = when (this) {
+        ArithmeticTermType.GT -> ">"
+        ArithmeticTermType.GT_EQ -> ">="
+        ArithmeticTermType.LT -> "<"
+        ArithmeticTermType.LT_EQ -> "<="
+        ArithmeticTermType.EQ_EQ -> "=="
+        ArithmeticTermType.NOT_EQ -> "!="
+    }

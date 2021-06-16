@@ -9,5 +9,5 @@ automaton Test {
 }
 
 fun Test.foo() {
-    requires (a > 1) || (a < 2) && (a >= 1) || !(a != 155.2);
+    requires (a > 1) || (a < 2) && (a >= 1) || !(a != 155.2) || (a == "foo(\"123\")");
 }

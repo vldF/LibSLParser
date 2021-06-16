@@ -183,8 +183,10 @@ inversion
    ;
 
 termPart
-   : Identifier
-   | number
+   :   Identifier
+   |   IntegerLiteral
+   |   FloatLiteral
+   |   StringLiteral
    ;
 
 requiresOp
@@ -195,13 +197,16 @@ requiresInversion
    :   '!'
    ;
 
-number
-   :   IntegerNumber
-   |   FloatConst
+FloatLiteral
+   :   IntegerLiteral '.' IntegerLiteral
    ;
 
-FloatConst
-   :   IntegerNumber '.' IntegerNumber
+StringLiteral
+   :   '"' String '"'
+   ;
+
+String
+   :   ( '\\"' | .)*?
    ;
 
 booleanOp
@@ -316,7 +321,7 @@ Identifier
 //    : ('>'|'<'|'<='|'>=')
 //    ;
 //
-IntegerNumber
+IntegerLiteral
     :   ('0'..'9')+
     ;
 

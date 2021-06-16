@@ -150,12 +150,17 @@ private class LibSLReader : LibSLBaseVisitor<Node>() {
     }
 
     private fun LibSLParser.TermPartContext.parseTerm() : Term {
-        return if (number() != null) {
-            val num = text.toIntOrNull() ?: text.toDouble()
-            Const(num)
-        } else {
-            VariableTerm(text)
+        return when {
+            this.FloatLiteral() != null -> Literal(text, FloatLiteral().text.toDouble())
+            this.IntegerLiteral() != null -> Literal(text, IntegerLiteral().text.toInt())
+            this.StringLiteral() != null -> Literal(text.clean(), null)
+            this.Identifier() != null -> VariableTerm(text)
+            else -> throw ParseException("Wrong term type: $this")
         }
+    }
+
+    private fun String.clean(): String {
+        return removePrefix("\"").removeSuffix("\"")
     }
 
     override fun visitActionDecl(ctx: LibSLParser.ActionDeclContext): Node {
