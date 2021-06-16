@@ -101,39 +101,44 @@ data class VariableAssignmentNew(
     val calleeArguments: List<String>
 ) : Node
 
-interface Term : Node
+sealed class Term : Node // todo: after update compiler's version to 1.5, replace to sealed interface
 
 data class VariableTerm (
     val name: String
-) : Term
+) : Term()
 
 data class Literal (
     val text: String,
     val numericValue: Number?
-) : Term
+) : Term()
 
 data class AndAndTerm (
     val left: Term,
     val right: Term
-) : Term
+) : Term()
 
 data class OrOrTerm (
     val left: Term,
     val right: Term
-) : Term
+) : Term()
 
 data class ArithmeticTerm(
     val left: Term,
     val right: Term,
     val type: ArithmeticTermType
-) : Term
+) : Term()
 
 data class InversionTerm(
     val term: Term
-) : Term
+) : Term()
 
-enum class ArithmeticTermType {
-    GT,GT_EQ, LT, LT_EQ, EQ_EQ, NOT_EQ
+enum class ArithmeticTermType(val text: String) {
+    GT(">"),
+    GT_EQ(">="),
+    LT("<"),
+    LT_EQ("<="),
+    EQ_EQ("=="),
+    NOT_EQ("!=")
 }
 
 fun arithmeticTypeFromString(str: String): ArithmeticTermType {
@@ -147,13 +152,3 @@ fun arithmeticTypeFromString(str: String): ArithmeticTermType {
         else -> throw ParseException("Unknown operator type")
     }
 }
-
-private val ArithmeticTermType.text: String
-    get() = when (this) {
-        ArithmeticTermType.GT -> ">"
-        ArithmeticTermType.GT_EQ -> ">="
-        ArithmeticTermType.LT -> "<"
-        ArithmeticTermType.LT_EQ -> "<="
-        ArithmeticTermType.EQ_EQ -> "=="
-        ArithmeticTermType.NOT_EQ -> "!="
-    }
