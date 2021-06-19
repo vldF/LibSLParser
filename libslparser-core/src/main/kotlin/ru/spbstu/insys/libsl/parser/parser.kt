@@ -86,11 +86,9 @@ private class LibSLReader : LibSLBaseVisitor<Node>() {
         )
 
     override fun visitFunDecl(ctx: LibSLParser.FunDeclContext): FunctionDecl {
-        val requires = visitFunRequires(ctx.funRequires())
         val args = ctx.funArgs()?.funArg()?.map { visitFunArg(it) } ?: listOf()
-
         val statements = ctx.funProperties().map { visit(it) }
-
+        val contractsInfo = ctx.getContractsInfo()
         val actions = statements.filterIsInstance<ActionDecl>()
         val staticName = statements.filterIsInstance<StaticDecl>().singleOrNull()
         val properties = statements.filterIsInstance<PropertyDecl>()
@@ -103,64 +101,16 @@ private class LibSLReader : LibSLBaseVisitor<Node>() {
             staticName = staticName,
             properties = properties,
             variableAssignments = variableAssignments,
-            requires = requires
+            contracts = contractsInfo
         )
     }
 
-    override fun visitFunRequires(ctx: LibSLParser.FunRequiresContext?): Term? {
-        ctx?.requiresTermsList() ?: return null
-        return visitRequiresTermsList(ctx.requiresTermsList())
-    }
+    private fun LibSLParser.FunDeclContext.getContractsInfo(): ContractsInfo {
+        // todo: fix this part of grammar
+        val requires = this.FunRequires()?.text?.removePrefix("requires ")?.removeSuffix(";")
+        val ensures = this.FunEnsures()?.text?.removePrefix("ensures ")?.removeSuffix(";")
 
-    override fun visitRequiresTermsList(ctx: LibSLParser.RequiresTermsListContext): Term {
-        if (ctx.requiresTerm() != null) {
-            val term = ctx.requiresTerm()
-            return visitRequiresTerm(term)
-        }
-
-        val left = visitRequiresTermsList(ctx.requiresTermsList(0))
-        val right = visitRequiresTermsList(ctx.requiresTermsList(1))
-
-        return when {
-            ctx.ANDAND() != null -> {
-                AndAndTerm(left, right)
-            }
-            ctx.OROR() != null -> {
-                OrOrTerm(left, right)
-            }
-            else -> {
-                throw ParseException("Unknown operator type")
-            }
-        }
-
-    }
-
-    override fun visitRequiresTerm(ctx: LibSLParser.RequiresTermContext): Term {
-        val left = ctx.termPart(0).parseTerm()
-        val right = ctx.termPart(1).parseTerm()
-        val opType =  arithmeticTypeFromString(ctx.booleanOp().text)
-
-        val arithmeticTerm = ArithmeticTerm(left, right,opType)
-
-        return if (ctx.inversion() != null) {
-            InversionTerm(arithmeticTerm)
-        } else {
-            arithmeticTerm
-        }
-    }
-
-    private fun LibSLParser.TermPartContext.parseTerm() : Term {
-        return when {
-            this.FloatLiteral() != null -> Literal(text, FloatLiteral().text.toDouble())
-            this.IntegerLiteral() != null -> Literal(text, IntegerLiteral().text.toInt())
-            this.StringLiteral() != null -> Literal(text.clean(), null)
-            this.Identifier() != null -> VariableTerm(text)
-            else -> throw ParseException("Wrong term type: $this")
-        }
-    }
-
-    private fun String.clean(): String {
-        return removePrefix("\"").removeSuffix("\"")
+        return ContractsInfo(requires, ensures)
     }
 
     override fun visitActionDecl(ctx: LibSLParser.ActionDeclContext): Node {

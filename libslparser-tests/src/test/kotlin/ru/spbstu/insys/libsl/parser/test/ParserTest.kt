@@ -97,16 +97,12 @@ class ParserTest {
     }
 
     @Test
-    fun parseWithRequires() {
-        val sourceModel = assertNotNull(readResourceAsString("models/LibraryWithRequires.lsl"))
+    fun parseWithContracts() {
+        val sourceModel = assertNotNull(readResourceAsString("models/LibraryWithContracts.lsl"))
         val parsedModel = ModelParser().parse(sourceModel)
 
         val func = parsedModel.functions.first()
-        assertTrue(func.requires is OrOrTerm)
-        val req1 = func.requires as OrOrTerm
-        assertTrue(req1.left is OrOrTerm)
-        assertTrue(req1.right is InversionTerm)
-        assertTrue((req1.right as InversionTerm).term is ArithmeticTerm)
-        assertEquals(ArithmeticTermType.NOT_EQ, ((req1.right as InversionTerm).term as ArithmeticTerm).type)
+        assertEquals("(a > 1) || (a < 2) && (a >= 1) || !(a != 155.2) || (a == \"foo(\\\"123\\\")\")", func.contracts.requires)
+        assertEquals("(a > 1) || (a < 2) && (a >= 1) || (result=old(arg1)*2)", func.contracts.ensures)
     }
 }

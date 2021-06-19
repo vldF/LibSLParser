@@ -60,7 +60,7 @@ data class FunctionDecl(
     val builtin: Boolean = false,
     val codeName: String = name,
     val variableAssignments: List<VariableAssignmentNew>,
-    val requires: Term?
+    val contracts: ContractsInfo
 ) : Node
 
 data class FunctionEntityDecl(val type: SemanticType, val declStyle: FunctionEntityDeclStyle) {
@@ -101,54 +101,11 @@ data class VariableAssignmentNew(
     val calleeArguments: List<String>
 ) : Node
 
-sealed class Term : Node // todo: after update compiler's version to 1.5, replace to sealed interface
-
-data class VariableTerm (
-    val name: String
-) : Term()
-
-data class Literal (
-    val text: String,
-    val numericValue: Number?
-) : Term()
-
-data class AndAndTerm (
-    val left: Term,
-    val right: Term
-) : Term()
-
-data class OrOrTerm (
-    val left: Term,
-    val right: Term
-) : Term()
-
-data class ArithmeticTerm(
-    val left: Term,
-    val right: Term,
-    val type: ArithmeticTermType
-) : Term()
-
-data class InversionTerm(
-    val term: Term
-) : Term()
-
-enum class ArithmeticTermType(val text: String) {
-    GT(">"),
-    GT_EQ(">="),
-    LT("<"),
-    LT_EQ("<="),
-    EQ_EQ("=="),
-    NOT_EQ("!=")
-}
-
-fun arithmeticTypeFromString(str: String): ArithmeticTermType {
-    return when (str) {
-        ">" -> ArithmeticTermType.GT
-        ">=" -> ArithmeticTermType.GT_EQ
-        "<" -> ArithmeticTermType.LT
-        "<=" -> ArithmeticTermType.LT_EQ
-        "==" -> ArithmeticTermType.EQ_EQ
-        "!=" -> ArithmeticTermType.NOT_EQ
-        else -> throw ParseException("Unknown operator type")
+data class ContractsInfo(
+    val requires: String?,
+    val ensures: String?
+) {
+    companion object {
+        val empty = ContractsInfo(null, null)
     }
 }

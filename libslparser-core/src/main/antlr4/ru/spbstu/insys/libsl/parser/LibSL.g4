@@ -157,65 +157,24 @@ extendableFlag
    ;
 
 funDecl
-   :   'fun' (entityName '.')? funName '(' funArgs? ')' (':' funReturnType)? (';' | '{' funRequires? funProperties* '}')
+   :   'fun' (entityName '.')? funName '(' funArgs? ')' (':' funReturnType)? (';' | '{' FunRequires? funProperties* FunEnsures?'}')
    ;
 
-funRequires
-   :   'requires' requiresTermsList ';'
+FunRequires
+   :   'requires' AnyString ';' // todo: make this right
    ;
 
-requiresTermsList
-   :   requiresTermsList ANDAND requiresTermsList
-   |   requiresTermsList OROR requiresTermsList
-   |   requiresTerm
+FunEnsures
+   :   'ensures' AnyString ';' // todo: make this right too
    ;
 
-ANDAND : '&&' ;
-
-OROR : '||' ;
-
-requiresTerm
-   :   inversion? '(' termPart booleanOp termPart ')'
-   ;
-
-inversion
-   :   '!'
-   ;
-
-termPart
-   :   Identifier
-   |   IntegerLiteral
-   |   FloatLiteral
-   |   StringLiteral
-   ;
-
-requiresOp
-   :   ('&&' | '||')
-   ;
-
-requiresInversion
-   :   '!'
-   ;
-
-FloatLiteral
-   :   IntegerLiteral '.' IntegerLiteral
-   ;
-
-StringLiteral
-   :   '"' String '"'
-   ;
-
-String
-   :   ( '\\"' | .)*?
-   ;
-
-booleanOp
-   : ('==' | '!=' | '>' | '<' | '>=' | '<=')
+fragment
+AnyString
+   :   (.)*?
    ;
 
 funProperties
    :   actionDecl
-   |   'requires' ';'
    |   'when' ';'
    |   propertyDecl
    |   variableAssignment
@@ -321,9 +280,9 @@ Identifier
 //    : ('>'|'<'|'<='|'>=')
 //    ;
 //
-IntegerLiteral
-    :   ('0'..'9')+
-    ;
+//DecNumbers
+//    :   ('0'..'9')+
+//    ;
 
 fragment
 JavaLetter
