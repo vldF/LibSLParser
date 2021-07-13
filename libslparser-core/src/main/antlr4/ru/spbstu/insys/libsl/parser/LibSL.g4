@@ -157,20 +157,95 @@ extendableFlag
    ;
 
 funDecl
-   :   'fun' (entityName '.')? funName '(' funArgs? ')' (':' funReturnType)? (';' | '{' FunRequires? funProperties* FunEnsures?'}')
+   :   'fun' (entityName '.')? funName '(' funArgs? ')' (':' funReturnType)? (';' | '{' funRequires? funProperties* funEnsures?'}')
    ;
 
-FunRequires
-   :   'requires' AnyString ';' // todo: make this right
+funRequires
+   :   'requires' expression ';'
    ;
 
-FunEnsures
-   :   'ensures' AnyString ';' // todo: make this right too
+funEnsures
+   :   'ensures' expression ';'
    ;
 
-fragment
-AnyString
-   :   (.)*?
+expression
+   :   conjunction
+   ;
+
+conjunction
+   :   conjunctionTermWithInversion ('&&' conjunctionTermWithInversion)*
+   ;
+
+conjunctionTermWithInversion
+   :   inversion? '(' disjunction ')'
+   ;
+
+disjunction
+   :   term ('||' term)*
+   ;
+
+inversion
+   :   '!'
+   ;
+
+term
+   :   inversion? ( '(' ) (variableName | functionCall | equality) ( ')' )
+   |   inversion? (variableName | functionCall | equality)
+   ;
+
+functionCall
+   :   Identifier '(' functionArgs? ')'
+   ;
+
+functionArgs
+   :   functionArg (',' functionArg)*
+   ;
+
+functionArg
+   :   equalityPart
+   ;
+
+variableName
+   :   Identifier
+   ;
+
+equality
+   :   equalityPart compareOp equalityPart
+   ;
+
+equalityPart
+   :   arithmeticExpression
+   |   String
+   ;
+
+compareOp
+   :   '==' | '!=' | '>=' | '<=' | '>' | '<'
+   ;
+
+arithmeticExpression
+   :   arithmeticExpression arithmeticSignMulDiv arithmeticExpression
+   |   arithmeticExpression arithmeticSignAddSub arithmeticExpression
+   |   Number
+   |   functionCall
+   |   variableName
+   ;
+
+arithmeticSignMulDiv
+   :   '*'
+   |   '/'
+   ;
+
+arithmeticSignAddSub
+   :   '+'
+   |   '-'
+   ;
+
+Number
+   :   ('0' .. '9')+ ('.' ('0' .. '9')+ )? // todo: add scientific notation
+   ;
+
+String
+   :   '"' (.)*? '"'
    ;
 
 funProperties

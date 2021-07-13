@@ -102,7 +102,18 @@ class ParserTest {
         val parsedModel = ModelParser().parse(sourceModel)
 
         val func = parsedModel.functions.first()
-        assertEquals("(a > 1) || (a < 2) && (a >= 1) || !(a != 155.2) || (a == \"foo(\\\"123\\\")\")", func.contracts.requires)
-        assertEquals("(a > 1) || (a < 2) && (a >= 1) || (result=old(arg1)*2)", func.contracts.ensures)
+        val requires = func.contracts.requires
+        val ensures = func.contracts.ensures
+
+        assertNotNull(requires)
+        assertNotNull(ensures)
+
+        assertEquals(4, requires.disjunctions.size)
+        assertEquals("a", ((requires.disjunctions[0].TermList.first() as? EqualityNode)?.left as? VariableNode)?.name)
+        assertEquals(155.2, ((requires.disjunctions[2].TermList.first() as? EqualityNode)?.right as? NumberNode)?.value)
+        assertEquals("foo", ((requires.disjunctions[3].TermList.first() as? EqualityNode)?.right as? FunctionCallNode)?.name)
+        assertEquals(123L, (((requires.disjunctions[3].TermList.first() as? EqualityNode)?.right as? FunctionCallNode)?.args?.first() as? NumberNode)?.value)
+
+        assertEquals(4, ensures.disjunctions.size)
     }
 }

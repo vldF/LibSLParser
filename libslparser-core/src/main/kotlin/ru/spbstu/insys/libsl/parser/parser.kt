@@ -106,11 +106,110 @@ private class LibSLReader : LibSLBaseVisitor<Node>() {
     }
 
     private fun LibSLParser.FunDeclContext.getContractsInfo(): ContractsInfo {
-        // todo: fix this part of grammar
-        val requires = this.FunRequires()?.text?.removePrefix("requires ")?.removeSuffix(";")
-        val ensures = this.FunEnsures()?.text?.removePrefix("ensures ")?.removeSuffix(";")
+        val requires = visitExpression(this.funRequires()?.expression())
+        val ensures = visitExpression(this.funEnsures()?.expression())
 
         return ContractsInfo(requires, ensures)
+    }
+
+    override fun visitExpression(ctx: LibSLParser.ExpressionContext?): ConjunctionNode? {
+        if (ctx == null) return null
+
+        return visitConjunction(ctx.conjunction())
+    }
+
+    override fun visitConjunction(ctx: LibSLParser.ConjunctionContext): ConjunctionNode {
+        val nodes = ctx.conjunctionTermWithInversion().map { visitConjunctionTermWithInversion(it) }
+        return ConjunctionNode(nodes)
+    }
+
+    override fun visitConjunctionTermWithInversion(ctx: LibSLParser.ConjunctionTermWithInversionContext): DisjunctionNode {
+        val isInverted = ctx.inversion() != null
+        val disjunction = ctx.disjunction()
+
+        return visitDisjunction(disjunction).apply {
+            this.isInverted = isInverted
+        }
+    }
+
+    override fun visitDisjunction(ctx: LibSLParser.DisjunctionContext): DisjunctionNode {
+        val terms = ctx.term().map { visitTerm(it) }.filterIsInstance<TermNode>()
+
+        return DisjunctionNode(terms, false)
+    }
+
+    override fun visitTerm(ctx: LibSLParser.TermContext): Node {
+        val isInverted = ctx.inversion() != null
+        return when {
+            ctx.equality() != null -> {
+                visitEquality(ctx.equality())
+            }
+            ctx.functionCall() != null -> {
+                visitFunctionCall(ctx.functionCall())
+            }
+            ctx.variableName() != null -> {
+                visitVariableName(ctx.variableName())
+            }
+            else -> throw IllegalStateException("unknown type of term")
+        }.apply {
+            this as TermNode
+            this.isInverted = isInverted
+        }
+    }
+
+    override fun visitEquality(ctx: LibSLParser.EqualityContext): Node {
+        val sign = when(ctx.compareOp().text) {
+            "==" -> EqualitySign.EQ_EQ
+            ">=" -> EqualitySign.GT_EQ
+            "<=" -> EqualitySign.LT_EQ
+            ">" -> EqualitySign.GT
+            "<" -> EqualitySign.LT
+            "!=" -> EqualitySign.NOT_EQ
+            else -> throw IllegalStateException("unknown operand type")
+        }
+
+        val left = visitEqualityPart(ctx.equalityPart().first())
+        val right = visitEqualityPart(ctx.equalityPart().last())
+
+        return EqualityNode(left, right, sign, false)
+    }
+
+    override fun visitEqualityPart(ctx: LibSLParser.EqualityPartContext): EqualityPartNode {
+        return if (ctx.String() != null) {
+            StringNode(ctx.String().text)
+        } else {
+            visitArithmeticExpression(ctx.arithmeticExpression())
+        }
+    }
+
+    override fun visitArithmeticExpression(ctx: LibSLParser.ArithmeticExpressionContext): ArithmeticExpressionNode {
+        if (ctx.Number() != null) {
+            val text = ctx.Number().text
+            return NumberNode(text.toLongOrNull() ?: text.toDoubleOrNull() ?: error("can't parse number: $text"))
+        }
+        if (ctx.functionCall() != null) {
+            val call = ctx.functionCall()
+            val functionName = call.Identifier().text
+            val args = call.functionArgs().functionArg().map { arg ->
+                visitEqualityPart(arg.equalityPart())
+            }
+            return FunctionCallNode(functionName, args, false)
+        }
+        if (ctx.variableName() != null) {
+            return VariableNode(ctx.variableName().Identifier().text, false)
+        }
+
+        val left = visitArithmeticExpression(ctx.arithmeticExpression(0))
+        val right = visitArithmeticExpression(ctx.arithmeticExpression(1))
+
+        return when {
+            ctx.arithmeticSignMulDiv()?.text == "*" -> MulNode(left, right)
+            ctx.arithmeticSignMulDiv()?.text == "/" -> DivNode(left, right)
+            ctx.arithmeticSignAddSub()?.text == "+" -> PlusNode(left, right)
+            ctx.arithmeticSignAddSub()?.text == "-" -> MinusNode(left, right)
+
+            else -> error("wrong sign")
+        }
     }
 
     override fun visitActionDecl(ctx: LibSLParser.ActionDeclContext): Node {

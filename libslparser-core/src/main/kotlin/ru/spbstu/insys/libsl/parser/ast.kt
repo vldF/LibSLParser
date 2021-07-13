@@ -102,8 +102,8 @@ data class VariableAssignmentNew(
 ) : Node
 
 data class ContractsInfo(
-    val requires: String?,
-    val ensures: String?
+    val requires: ConjunctionNode?,
+    val ensures: ConjunctionNode?
 ) {
     companion object {
         val empty = ContractsInfo(null, null)
