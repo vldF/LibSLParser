@@ -245,7 +245,7 @@ Number
    ;
 
 String
-   :   '"' (.)*? '"'
+   :   '"' ('\\"' | .)*? '"'
    ;
 
 funProperties
