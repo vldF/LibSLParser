@@ -157,6 +157,14 @@ private class LibSLReader : LibSLBaseVisitor<Node>() {
         }
     }
 
+    override fun visitFunctionCall(ctx: LibSLParser.FunctionCallContext): Node {
+        return FunctionCallNode(
+            ctx.Identifier().text,
+            ctx.functionArgs().functionArg().map { visitEqualityPart(it.equalityPart()) },
+            false
+        )
+    }
+
     override fun visitVariableName(ctx: LibSLParser.VariableNameContext): Node {
         return VariableNode(ctx.Identifier().text, false)
     }
