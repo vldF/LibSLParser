@@ -157,6 +157,10 @@ private class LibSLReader : LibSLBaseVisitor<Node>() {
         }
     }
 
+    override fun visitVariableName(ctx: LibSLParser.VariableNameContext): Node {
+        return VariableNode(ctx.Identifier().text, false)
+    }
+
     override fun visitEquality(ctx: LibSLParser.EqualityContext): Node {
         val sign = when(ctx.compareOp().text) {
             "==" -> EqualitySign.EQ_EQ
