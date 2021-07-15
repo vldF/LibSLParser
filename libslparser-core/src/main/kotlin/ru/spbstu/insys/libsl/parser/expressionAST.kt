@@ -2,19 +2,19 @@ package ru.spbstu.insys.libsl.parser
 
 sealed class ExpressionNode : Node
 
-class ConjunctionNode(val disjunctions: List<DisjunctionNode>) : ExpressionNode()
+data class ConjunctionNode(val disjunctions: List<DisjunctionNode>) : ExpressionNode()
 
-class DisjunctionNode(val TermList: List<TermNode>, var isInverted: Boolean) : ExpressionNode()
+data class DisjunctionNode(val TermList: List<TermNode>, var isInverted: Boolean) : ExpressionNode()
 
 sealed class TermNode : ExpressionNode() {
     abstract var isInverted: Boolean
 }
 
-class VariableNode(val name: String, override var isInverted: Boolean) : ArithmeticExpressionNode()
+data class VariableNode(val name: String, override var isInverted: Boolean) : ArithmeticExpressionNode()
 
 class FunctionCallNode(val name: String, val args: List<EqualityPartNode>, override var isInverted: Boolean) : ArithmeticExpressionNode()
 
-class EqualityNode(
+data class EqualityNode(
     val left: EqualityPartNode,
     val right: EqualityPartNode,
     val sign: EqualitySign,
@@ -35,15 +35,15 @@ sealed class UnaryArithmeticExpressionNode : ArithmeticExpressionNode()
 
 sealed class BinaryArithmeticExpressionNode : ArithmeticExpressionNode()
 
-class NumberNode(val value: Number) : UnaryArithmeticExpressionNode()
+data class NumberNode(val value: Number) : UnaryArithmeticExpressionNode()
 
-class StringNode(val value: String) : EqualityPartNode()
+data class StringNode(val value: String) : EqualityPartNode()
 
-class MulNode(val left: ArithmeticExpressionNode, val right: ArithmeticExpressionNode) : BinaryArithmeticExpressionNode()
+data class MulNode(val left: ArithmeticExpressionNode, val right: ArithmeticExpressionNode) : BinaryArithmeticExpressionNode()
 
-class DivNode(val left: ArithmeticExpressionNode, val right: ArithmeticExpressionNode) : BinaryArithmeticExpressionNode()
+data class DivNode(val left: ArithmeticExpressionNode, val right: ArithmeticExpressionNode) : BinaryArithmeticExpressionNode()
 
-class MinusNode(val left: ArithmeticExpressionNode, val right: ArithmeticExpressionNode) : BinaryArithmeticExpressionNode()
+data class MinusNode(val left: ArithmeticExpressionNode, val right: ArithmeticExpressionNode) : BinaryArithmeticExpressionNode()
 
-class PlusNode(val left: ArithmeticExpressionNode, val right: ArithmeticExpressionNode) : BinaryArithmeticExpressionNode()
+data class PlusNode(val left: ArithmeticExpressionNode, val right: ArithmeticExpressionNode) : BinaryArithmeticExpressionNode()
 
