@@ -3,7 +3,7 @@ package ru.spbstu.insys.libsl.parser.visitors
 import ru.spbstu.insys.libsl.parser.*
 
 abstract class AbstractExpressionVisitor<T> {
-    fun visit(node: ExpressionNode) : T {
+     open fun visit(node: ExpressionNode) : T {
         return when (node) {
             is ConjunctionNode -> visitConjunctionNode(node)
             is DisjunctionNode -> visitDisjunctionNode(node)
