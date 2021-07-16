@@ -187,10 +187,16 @@ private class LibSLReader : LibSLBaseVisitor<Node>() {
     }
 
     override fun visitEqualityPart(ctx: LibSLParser.EqualityPartContext): EqualityPartNode {
-        return if (ctx.String() != null) {
-            StringNode(ctx.String().text.removeSuffix("\"").removePrefix("\""))
-        } else {
-            visitArithmeticExpression(ctx.arithmeticExpression())
+        return when {
+            ctx.String() != null -> {
+                StringNode(ctx.String().text.removeSuffix("\"").removePrefix("\""))
+            }
+            ctx.arithmeticExpression() != null -> {
+                visitArithmeticExpression(ctx.arithmeticExpression())
+            }
+            else -> {
+                BooleanExpression(visitConjunction(ctx.conjunction()))
+            }
         }
     }
 

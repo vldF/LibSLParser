@@ -16,6 +16,7 @@ abstract class AbstractExpressionVisitor<T> {
             is NumberNode -> visitNumberNode(node)
             is VariableNode -> visitVariableNode(node)
             is StringNode -> visitStringNode(node)
+            is BooleanExpression -> visitConjunctionNode(node.expr)
         }
     }
 

@@ -17,3 +17,7 @@ fun Test.foo(a: Int) {
 fun Test.bar(a: Int) {
     requires (a > 1 + 2 * 3) && (2 / 3 > a);
 }
+
+fun Test.tar(a: Int) {
+    ensures (old(!(a)));
+}

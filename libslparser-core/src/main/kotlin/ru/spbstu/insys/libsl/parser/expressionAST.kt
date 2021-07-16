@@ -39,6 +39,8 @@ data class NumberNode(val value: Number) : UnaryArithmeticExpressionNode()
 
 data class StringNode(val value: String) : EqualityPartNode()
 
+data class BooleanExpression(val expr: ConjunctionNode) : EqualityPartNode()
+
 data class MulNode(val left: ArithmeticExpressionNode, val right: ArithmeticExpressionNode) : BinaryArithmeticExpressionNode()
 
 data class DivNode(val left: ArithmeticExpressionNode, val right: ArithmeticExpressionNode) : BinaryArithmeticExpressionNode()

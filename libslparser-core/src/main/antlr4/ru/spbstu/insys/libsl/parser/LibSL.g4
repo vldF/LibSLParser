@@ -216,6 +216,7 @@ equality
 equalityPart
    :   arithmeticExpression
    |   String
+   |   conjunction
    ;
 
 compareOp
